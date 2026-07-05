@@ -13,6 +13,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'PeerPrep API is running' })
 })
 
+app.get('/', (req, res) => {
+  res.json({ message: 'PeerPrep API — see /health for status' })
+})
+
 app.get('/match/:userId', async (req, res) => {
   const { userId } = req.params
 
