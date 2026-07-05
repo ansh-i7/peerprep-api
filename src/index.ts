@@ -75,6 +75,50 @@ app.get('/match/:userId', async (req, res) => {
 })
 
 const PORT = process.env.PORT || 4000
+
+app.post('/messages', async (req, res) => {
+  const { match_id, sender_id, content } = req.body
+
+  if (!match_id || !sender_id || !content || !content.trim()) {
+    return res.status(400).json({ error: 'match_id, sender_id, and content are required' })
+  }
+
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({ match_id, sender_id, content: content.trim() })
+    .select()
+    .single()
+
+  if (error) {
+    return res.status(500).json({ error: error.message })
+  }
+
+  return res.json({ message: data })
+})
+
+app.get('/messages/:matchId', async (req, res) => {
+  const { matchId } = req.params
+  const { since } = req.query
+
+  let query = supabase
+    .from('messages')
+    .select('*')
+    .eq('match_id', matchId)
+    .order('created_at', { ascending: true })
+
+  if (since) {
+    query = query.gt('created_at', since as string)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    return res.status(500).json({ error: error.message })
+  }
+
+  return res.json({ messages: data })
+})
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
